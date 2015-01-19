@@ -11,9 +11,12 @@ class Imagify
 {
     protected $app;
 
-    public function __construct(Application $app)
+    protected $urlResolver;
+
+    public function __construct(Application $app,UrlResolverInterface $urlResolver)
     {
         $this->app  = $app;
+        $this->urlResolver = $urlResolver;
     }
 
     /**
@@ -32,8 +35,8 @@ class Imagify
             'height' => $height,
             'source' => $source
         ];
-        $path = $this->replaceRouteParameters($parameters);
-        return $this->url($path);
+        $path = $this->urlResolver->replaceRouteParameters($parameters);
+        return $this->urlResolver->url($path);
     }
 
     /**
@@ -52,38 +55,7 @@ class Imagify
             'height' => $height,
             'source' => $source
         ];
-        $path = $this->replaceRouteParameters($parameters);
-        return $this->url($path);
-    }
-
-    /**
-     * Replace route parameters
-     *
-     * @param $array
-     * @return mixed|string
-     */
-    protected function replaceRouteParameters($array){
-        $route = $this->route();
-        foreach($array as $name => $value) {
-            $route = str_replace('{' . $name . '}', $value, $route);
-        }
-        return $route;
-    }
-
-    /**
-     * Return full url
-     * @param $path
-     * @return mixed
-     */
-    protected function url($path){
-        return \URL::to($path);
-    }
-
-    /**
-     * Return full route
-     * @return string
-     */
-    protected function route(){
-        return $this->app['config']->get('imagify::base_route') . '/' . $this->app['config']->get('imagify::route');
+        $path = $this->urlResolver->replaceRouteParameters($parameters);
+        return $this->urlResolver->url($path);
     }
 } 

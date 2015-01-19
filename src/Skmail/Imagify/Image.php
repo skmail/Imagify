@@ -17,7 +17,7 @@ use Imagine\Image\Point\Center;
 use Illuminate\Support\Facades\Response;
 use Exception;
 use Config;
-
+use Skmail\Imagify\UrlResolverInterface;
 
 class Image {
 
@@ -39,10 +39,15 @@ class Image {
 
     protected $savePath;
 
-    public function __construct(Imagine $imagine,Filesystem $files){
+    protected $urlResolver;
+
+    public function __construct(Imagine $imagine,Filesystem $files,UrlResolverInterface $urlResolver)
+    {
         $this->files = $files;
         $this->imagine = $imagine;
+        $this->urlResolver = $urlResolver;
     }
+
     /**
      * Set parameters
      *
@@ -293,14 +298,12 @@ class Image {
     public function getSavePath()
     {
         $arr = [
-            $this->config('imagify::base_route') ,
-            $this->config('imagify::route') ,
-            $this->getParam('method') ,
-            $this->getParam('width') ,
-            $this->getParam('height') ,
-            $this->getSource()
+            'method' => $this->getParam('method') ,
+            'width'  => $this->getParam('width') ,
+            'height' => $this->getParam('height') ,
+            'source' =>$this->getSource()
         ];
-        return implode(DIRECTORY_SEPARATOR,$arr);
+        return $this->urlResolver->replaceRouteParameters($arr);
     }
 
 

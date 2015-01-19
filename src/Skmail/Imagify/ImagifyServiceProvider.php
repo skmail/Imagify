@@ -18,8 +18,9 @@ class ImagifyServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('skmail/imagify');
 
+		$this->package('skmail/imagify');
+        $this->app->bind('Skmail\Imagify\UrlResolverInterface', 'Skmail\Imagify\UrlResolver');
         $this->registerRoute();
     }
 
@@ -42,7 +43,7 @@ class ImagifyServiceProvider extends ServiceProvider {
 	{
         $this->app['imagify'] = $this->app->share(function($app)
         {
-            return new Imagify($this->app);
+            return $this->app->make('Skmail\Imagify\Imagify');
         });
 
     }
