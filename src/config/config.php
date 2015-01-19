@@ -2,20 +2,18 @@
 
 return  [
 
-    'route' => 'cachedImages',
+    'base_route' => 'cachedImages',
+    'route' => '{method}/{width}/{height}/{source}',
 
-    'recipes' => [
-        'thumbnail' => [
-            'width' => 100,
-            'height' => 100
-        ],
-        'slider' => [
-            'width' => '600',
-            'height' => '300'
-        ],
-        'gallery' => [
-            'width' => '800',
-            'height' => '600'
-        ]
-    ]
+    'quality' => 80,
+
+    'max' => [
+        'width' => 0,
+        'height' => 0
+    ],
+
+    'min' => [
+        'width' => 10,
+        'height' => 10
+    ],
 ];

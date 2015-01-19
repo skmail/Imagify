@@ -13,9 +13,6 @@
         "imagine/imagine": "~0.5.0"
     },
     "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
         "psr-0": {
             "Skmail\\Imagify\\": "src/"
         }
