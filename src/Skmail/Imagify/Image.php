@@ -329,15 +329,9 @@ class Image {
         $size      = $this->image->getSize();
         $watermark = $this->imagine->open($this->config('imagify::watermark'));
         $wSize     = $watermark->getSize();
-
-
-
         $watermark = clone \App::make('\Skmail\Imagify\Image');
-
         $watermark->setSource($this->config('imagify::watermark'));
-
         list($wWidth,$wHeight) = $this->getBestResize($wSize,$size);
-
         $watermark->setParams([
             'width' => $wWidth,
             'height' => $wHeight,
@@ -346,19 +340,13 @@ class Image {
             'transparent' => true
         ]);
         $watermark->process();
-
         $watermark = $watermark->getImage();
-
         $wSize     = $watermark->getSize();
-
         $bottomRight = new \Imagine\Image\Point($size->getWidth() - $wSize->getWidth() - 5, $size->getHeight() - $wSize->getHeight() - 5);
-
-
         $this->image->paste($watermark, $bottomRight);
     }
 
     public function getBestResize($wSize,$iSize){
-
         if($wSize->getWidth() < $iSize->getWidth() && $wSize->getHeight() < $iSize->getHeight()){
             return [$wSize->getWidth(),$wSize->getHeight()] ;
         }
