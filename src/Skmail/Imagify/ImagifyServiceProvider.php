@@ -32,6 +32,7 @@ class ImagifyServiceProvider extends ServiceProvider {
             ->get($baseRoute . '/'. $route,'Skmail\Imagify\Controllers\ImagifyController@response')
             ->where('width', '[0-9]+')
             ->where('height', '[0-9]+')
+            ->where('watermark', '[0-9]+')
             ->where('source', '((([^0-9A-Fa-f]{3}|[^0-9A-Fa-f]{6})?).*?.)');
     }
 	/**

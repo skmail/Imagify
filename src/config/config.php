@@ -16,4 +16,5 @@ return  [
         'width' => 10,
         'height' => 10
     ],
+    'watermark' => null
 ];

@@ -46,6 +46,7 @@ class Image {
         $this->files = $files;
         $this->imagine = $imagine;
         $this->urlResolver = $urlResolver;
+
     }
 
     /**
@@ -105,12 +106,12 @@ class Image {
     {
         $this->process();
         $this->createDirectory();
-        $this->image->save($this->getSavePath(),$this->getOptions());
+//        $this->image->save($this->getSavePath(),$this->getOptions());
         return $this;
     }
 
 
-    protected function  process()
+    public  function  process()
     {
         if($this->isProcessed()){
             return ;
@@ -131,6 +132,10 @@ class Image {
             $this->setOption($this->getOption('quality'),round((100 - $this->getOption('quality')) * 9 / 100));
         }
         $this->{$method}();
+
+        if($this->getParam('watermark') !== false){
+            $this->watermark();
+        }
         return $this;
     }
 
@@ -295,6 +300,10 @@ class Image {
         }
     }
 
+    public function getImage(){
+        return $this->image;
+    }
+
     public function getSavePath()
     {
         $arr = [
@@ -303,8 +312,69 @@ class Image {
             'height' => $this->getParam('height') ,
             'source' =>$this->getSource()
         ];
+
+        if($this->getParam('watermark') !== false){
+            $arr = ['watermark' => 'w' ] + $arr;
+        }
+
+
         return $this->urlResolver->replaceRouteParameters($arr);
     }
 
 
+    public function watermark(){
+        if(!$this->config('imagify::watermark')){
+            return;
+        }
+        $size      = $this->image->getSize();
+        $watermark = $this->imagine->open($this->config('imagify::watermark'));
+        $wSize     = $watermark->getSize();
+
+
+
+        $watermark = clone \App::make('\Skmail\Imagify\Image');
+
+        $watermark->setSource($this->config('imagify::watermark'));
+
+        list($wWidth,$wHeight) = $this->getBestResize($wSize,$size);
+
+        $watermark->setParams([
+            'width' => $wWidth,
+            'height' => $wHeight,
+            'method' => 'resize',
+            'watermark' => false,
+            'transparent' => true
+        ]);
+        $watermark->process();
+
+        $watermark = $watermark->getImage();
+
+        $wSize     = $watermark->getSize();
+
+        $bottomRight = new \Imagine\Image\Point($size->getWidth() - $wSize->getWidth() - 5, $size->getHeight() - $wSize->getHeight() - 5);
+
+
+        $this->image->paste($watermark, $bottomRight);
+    }
+
+    public function getBestResize($wSize,$iSize){
+
+        if($wSize->getWidth() < $iSize->getWidth() && $wSize->getHeight() < $iSize->getHeight()){
+            return [$wSize->getWidth(),$wSize->getHeight()] ;
+        }
+        return $this->getBestResize(new Box($wSize->getWidth() / 3.5,$wSize->getHeight() / 3.5),$iSize);
+    }
+
+
+    private function getTransparencyMask(\Imagine\Image\Palette\PaletteInterface $palette, Imagine\Image\BoxInterface $size)
+    {
+        $white = $palette->color('fff');
+        $fill  = new \Imagine\Image\Fill\Gradient\Vertical(
+            $size->getHeight(),
+            $white->darken(127),
+            $white
+        );
+
+        return $this->imagine->create($size)->fill($fill);
+    }
 } 

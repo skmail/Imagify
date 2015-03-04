@@ -25,6 +25,10 @@ class UrlResolver implements UrlResolverInterface
     public function replaceRouteParameters($array)
     {
         $route = $this->route();
+
+        if(isset($array['watermark'])){
+            $array['source'] = 'w/' . $array['source'];
+        }
         foreach($array as $name => $value) {
             $route = str_replace('{' . $name . '}', $value, $route);
         }

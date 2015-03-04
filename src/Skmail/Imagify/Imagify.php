@@ -27,7 +27,7 @@ class Imagify
      * @param $height
      * @return string
      */
-    public function crop($source,$width,$height)
+    public function crop($source,$width,$height,$watermark = false)
     {
         $parameters = [
             'method' => 'crop',
@@ -35,6 +35,10 @@ class Imagify
             'height' => $height,
             'source' => $source
         ];
+
+        if($watermark == true && $this->app['config']->get('imagify::watermark',null)){
+            $parameters = ['watermark' => 'w'] + $parameters;
+        }
         $path = $this->urlResolver->replaceRouteParameters($parameters);
         return $this->urlResolver->url($path);
     }
@@ -42,12 +46,13 @@ class Imagify
     /**
      * Return resized image url
      *
-     * @param $source
-     * @param $width
-     * @param $height
+     * @param      $source
+     * @param      $width
+     * @param      $height
+     * @param bool $watermark
      * @return string
      */
-    public function resize($source,$width,$height)
+    public function resize($source,$width,$height,$watermark = false)
     {
         $parameters = [
             'method' => 'resize',
@@ -55,6 +60,10 @@ class Imagify
             'height' => $height,
             'source' => $source
         ];
+
+        if($watermark == true && $this->app['config']->get('imagify::watermark',null)){
+            $parameters = ['watermark' => 'w'] + $parameters;
+        }
         $path = $this->urlResolver->replaceRouteParameters($parameters);
         return $this->urlResolver->url($path);
     }
