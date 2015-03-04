@@ -364,17 +364,4 @@ class Image {
         }
         return $this->getBestResize(new Box($wSize->getWidth() / 3.5,$wSize->getHeight() / 3.5),$iSize);
     }
-
-
-    private function getTransparencyMask(\Imagine\Image\Palette\PaletteInterface $palette, Imagine\Image\BoxInterface $size)
-    {
-        $white = $palette->color('fff');
-        $fill  = new \Imagine\Image\Fill\Gradient\Vertical(
-            $size->getHeight(),
-            $white->darken(127),
-            $white
-        );
-
-        return $this->imagine->create($size)->fill($fill);
-    }
 } 
