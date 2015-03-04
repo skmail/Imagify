@@ -106,7 +106,7 @@ class Image {
     {
         $this->process();
         $this->createDirectory();
-//        $this->image->save($this->getSavePath(),$this->getOptions());
+        $this->image->save($this->getSavePath(),$this->getOptions());
         return $this;
     }
 
