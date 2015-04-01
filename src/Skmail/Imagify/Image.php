@@ -68,6 +68,11 @@ class Image {
         return $default;
     }
 
+    public function setParam($name,$value){
+        $this->params[$name] = $value;
+        return $this;
+    }
+
     /**
      * @param $source
      * @throws Exception
@@ -167,11 +172,27 @@ class Image {
 
     public function resize()
     {
+        $imageSize = $this->image->getSize();
+        $sourceRatio = $imageSize->getWidth() / $imageSize->getHeight();
+
+        $destReatio = $this->getParam('width') / $this->getParam('height');
+
+        if($destReatio !=  $sourceRatio ){
+
+            $destWidth = ceil($this->getParam('width'));
+            $destHeight = ceil($this->getParam('width') / $sourceRatio);
+
+            if($destWidth >  $this->getParam('width') ||  $destHeight > $this->getParam('height')){
+                $destWidth = ceil($this->getParam('height')  * $sourceRatio);
+                $destHeight = ceil($this->getParam('height') );
+            }
+            $this->setParam('width',$destWidth);
+            $this->setParam('height',$destHeight);
+
+        }
+
         $this->image->resize(new Box($this->getParam('width'), $this->getParam('height')));
     }
-
-
-
     public function getType(){
         $ext = pathinfo($this->source, PATHINFO_EXTENSION);
         switch($ext){
