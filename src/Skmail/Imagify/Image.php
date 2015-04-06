@@ -186,12 +186,11 @@ class Image {
                 $destWidth = ceil($this->getParam('height')  * $sourceRatio);
                 $destHeight = ceil($this->getParam('height') );
             }
-            $this->setParam('width',$destWidth);
-            $this->setParam('height',$destHeight);
-
+        }else{
+            $destHeight = $this->getParam('height') ;
+            $destWidth =  $this->getParam('width');
         }
-
-        $this->image->resize(new Box($this->getParam('width'), $this->getParam('height')));
+        $this->image->resize(new Box($destWidth,$destHeight));
     }
     public function getType(){
         $ext = pathinfo($this->source, PATHINFO_EXTENSION);
