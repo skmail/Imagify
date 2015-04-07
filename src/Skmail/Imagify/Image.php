@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: solaimankmail
- * Date: 1/19/15
- * Time: 1:17 AM
- */
 
 namespace Skmail\Imagify;
 
@@ -12,12 +6,12 @@ use Imagine\Image\ImageInterface;
 use Illuminate\Filesystem\Filesystem;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
+use Imagine\Image\Metadata\MetadataBag;
+use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
-use Imagine\Image\Point\Center;
 use Illuminate\Support\Facades\Response;
 use Exception;
 use Config;
-use Skmail\Imagify\UrlResolverInterface;
 
 class Image {
 
@@ -46,7 +40,6 @@ class Image {
         $this->files = $files;
         $this->imagine = $imagine;
         $this->urlResolver = $urlResolver;
-
     }
 
     /**
@@ -146,28 +139,8 @@ class Image {
 
     public function crop()
     {
-        $srcBox = $this->image->getSize();
-        $sourceWidth = $srcBox->getWidth();
-        $sourceHeight = $srcBox->getHeight();
-        $targetWidth = $this->box->getWidth();
-        $targetHeight = $this->box->getHeight();
-        $sourceRatio = $sourceWidth / $sourceHeight;
-        $targetRatio = $targetWidth / $targetHeight;
-        if ( $sourceRatio < $targetRatio ) {
-            $scale = $sourceWidth / $targetWidth;
-        } else {
-            $scale = $sourceHeight / $targetHeight;
-        }
-        $resizeWidth = (int)($sourceWidth / $scale);
-        $resizeHeight = (int)($sourceHeight / $scale);
-        $cropLeft = (int)(($resizeWidth - $targetWidth) / 2);
-        $cropTop = (int)(($resizeHeight - $targetHeight) / 2);
-        $cropPoint = new Point($cropLeft,$cropTop);
-        $box = new Box($resizeWidth, $resizeHeight);
-        $image = $this->image->thumbnail($box, \Imagine\Image\ImageInterface::THUMBNAIL_OUTBOUND);
-        $image->crop($cropPoint, $this->box);
-        $this->image = $image;
-
+        $this->gdCrop();
+        return $this;
     }
 
     public function resize()
@@ -191,6 +164,7 @@ class Image {
             $destWidth =  $this->getParam('width');
         }
         $this->image->resize(new Box($destWidth,$destHeight));
+        return $this;
     }
     public function getType(){
         $ext = pathinfo($this->source, PATHINFO_EXTENSION);
@@ -332,16 +306,15 @@ class Image {
             'height' => $this->getParam('height') ,
             'source' =>$this->getSource()
         ];
-
         if($this->getParam('watermark') !== false){
             $arr = ['watermark' => 'w' ] + $arr;
         }
-
-
         return $this->urlResolver->replaceRouteParameters($arr);
     }
 
-
+    /**
+     * Add watermark
+     */
     public function watermark(){
         if(!$this->config('imagify::watermark')){
             return;
@@ -366,10 +339,55 @@ class Image {
         $this->image->paste($watermark, $bottomRight);
     }
 
-    public function getBestResize($wSize,$iSize){
+    public function getBestResize($wSize,$iSize)
+    {
         if($wSize->getWidth() < $iSize->getWidth() && $wSize->getHeight() < $iSize->getHeight()){
             return [$wSize->getWidth(),$wSize->getHeight()] ;
         }
         return $this->getBestResize(new Box($wSize->getWidth() / 3.5,$wSize->getHeight() / 3.5),$iSize);
+    }
+
+    /**
+     * Crop by gb lib
+     * @return $this
+     */
+
+    protected function gdCrop()
+    {
+        $srcBox = $this->image->getSize();
+        $sourceWidth = $srcBox->getWidth();
+        $sourceHeight = $srcBox->getHeight();
+        $targetWidth = $this->box->getWidth();
+        $targetHeight = $this->box->getHeight();
+        $sourceAspectRatio = $sourceWidth / $sourceHeight;
+        $desiredAspectRatio = $targetWidth / $targetHeight;
+        if ($sourceAspectRatio > $desiredAspectRatio) {
+            $thumbHeight = $targetHeight;
+            $thumbWidth = ( int ) ($targetHeight * $sourceAspectRatio);
+        } else {
+            $thumbWidth = $targetWidth;
+            $thumbHeight = ( int ) ($targetWidth / $sourceAspectRatio);
+        }
+        $tempResource = imagecreatetruecolor($thumbWidth, $thumbHeight);
+        imagecopyresampled(
+            $tempResource,
+            $this->image->getGdResource(),
+            0, 0,
+            0, 0,
+            $thumbWidth, $thumbHeight,
+            $sourceWidth, $sourceHeight
+        );
+        $x0 = ($thumbWidth - $targetWidth) / 2;
+        $y0 = ($thumbHeight - $targetHeight) / 2;
+        $targetResource = imagecreatetruecolor($targetWidth, $targetHeight);
+        imagecopy(
+            $targetResource,
+            $tempResource,
+            0, 0,
+            $x0, $y0,
+            $targetWidth, $targetHeight
+        );
+        $this->image = new \Imagine\Gd\Image($targetResource,new RGB,new MetadataBag);
+        return $this;
     }
 } 
