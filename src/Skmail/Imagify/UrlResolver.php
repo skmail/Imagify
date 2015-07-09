@@ -30,6 +30,9 @@ class UrlResolver implements UrlResolverInterface
             $array['source'] = 'w/' . $array['source'];
         }
         foreach($array as $name => $value) {
+    		if(is_array($value) && array_key_exists('file', $value)){
+    			$value = $value['file'];
+    		}
             $route = str_replace('{' . $name . '}', $value, $route);
         }
         return $route;
