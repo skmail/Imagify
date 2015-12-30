@@ -39,6 +39,9 @@ class Imagify
         if($watermark == true && $this->app['config']->get('imagify::watermark',null)){
             $parameters = ['watermark' => 'w'] + $parameters;
         }
+        if($this->app['config']->get('imagify::default',false) && empty($source)){
+            $parameters['source'] = $this->app['config']->get('imagify::default',false);
+        }
         $path = $this->urlResolver->replaceRouteParameters($parameters);
         return $this->urlResolver->url($path);
     }
@@ -63,6 +66,9 @@ class Imagify
 
         if($watermark == true && $this->app['config']->get('imagify::watermark',null)){
             $parameters = ['watermark' => 'w'] + $parameters;
+        }
+        if($this->app['config']->get('imagify::default',false) && empty($source)){
+            $parameters['source'] = $this->app['config']->get('imagify::default',false);
         }
         $path = $this->urlResolver->replaceRouteParameters($parameters);
         return $this->urlResolver->url($path);

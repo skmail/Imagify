@@ -79,8 +79,9 @@ class Image {
             }else{
                 $this->source = $this->config('imagify::default');
             }
-        }
-        $this->source = $source;
+        }else{
+            $this->source = $source;
+        } 
         return $this;
     }
 
