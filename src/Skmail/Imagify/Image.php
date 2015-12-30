@@ -74,7 +74,11 @@ class Image {
     public function setSource($source)
     {
         if(!$this->files->exists($source)){
-            throw new Exception("Image not found");
+            if(!$this->config('imagify::default',false)){
+                throw new Exception("Image not found");
+            }else{
+                $this->source = $this->config('imagify::default');
+            }
         }
         $this->source = $source;
         return $this;

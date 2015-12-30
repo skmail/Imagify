@@ -7,6 +7,8 @@ return  [
 
     'quality' => 80,
 
+    'default' => false,
+
     'max' => [
         'width' => 0,
         'height' => 0
